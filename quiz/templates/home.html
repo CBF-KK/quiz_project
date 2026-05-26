@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>線上測驗</title>
+
+    <style>
+        body{
+            font-family: Arial;
+            padding: 30px;
+            background: #f5f5f5;
+        }
+
+        .question{
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        img{
+            max-width: 300px;
+            margin: 10px 0;
+            display:block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>線上測驗網站</h1>
+<h2 id="timer" style="
+    color:blue;
+    position:fixed;
+    top:20px;
+    right:20px;
+    background:white;
+    padding:10px 20px;
+    border-radius:10px;
+">
+    剩餘時間:05:00
+</h2>
+
+<form method="post" id="quizForm">
+
+    {% if score is not None %}
+    <div style="
+        margin-top:20px;
+        padding:20px;
+        background:#fff;
+        border-radius:10px;
+        font-size:20px;
+        color:green;
+    ">
+        🎯 測驗結束<br>
+        你的成績：{{ score }} 分
+    </div>
+    {% endif %}
+    {% csrf_token %}
+
+    {% for q in questions %}
+
+    <div class="question">
+
+        <!-- 題目文字 -->
+        <h3>
+            第 {{ forloop.counter }} 題：
+            {{ q.question_text }}
+        </h3>
+
+        <!-- 題目圖片 -->
+        {% if q.question_image %}
+            <img src="{{ q.question_image.url }}">
+        {% endif %}
+
+        <!-- A -->
+<label>
+    <input type="radio"
+           name="{{ q.id }}"
+           value="A"
+           {% if submitted %}disabled{% endif %}>
+
+    {{ q.option_a_text }}
+
+    {% if q.option_a_image %}
+        <img src="{{ q.option_a_image.url }}">
+    {% endif %}
+</label>
+
+<br><br>
+
+<!-- B -->
+<label>
+    <input type="radio"
+           name="{{ q.id }}"
+           value="B"
+           {% if submitted %}disabled{% endif %}>
+
+    {{ q.option_b_text }}
+
+    {% if q.option_b_image %}
+        <img src="{{ q.option_b_image.url }}">
+    {% endif %}
+</label>
+
+<br><br>
+
+<!-- C -->
+<label>
+    <input type="radio"
+           name="{{ q.id }}"
+           value="C"
+           {% if submitted %}disabled{% endif %}>
+
+    {{ q.option_c_text }}
+
+    {% if q.option_c_image %}
+        <img src="{{ q.option_c_image.url }}">
+    {% endif %}
+</label>
+
+<br><br>
+
+<!-- D -->
+<label>
+    <input type="radio"
+           name="{{ q.id }}"
+           value="D"
+           {% if submitted %}disabled{% endif %}>
+
+    {{ q.option_d_text }}
+
+    {% if q.option_d_image %}
+        <img src="{{ q.option_d_image.url }}">
+    {% endif %}
+</label>
+
+    </div>
+
+    {% endfor %}
+
+    {% if not submitted %}
+    <button type="submit">
+        交卷
+    </button>
+    {% endif %}
+
+</form>
+
+{% if score is not None %}
+    <h2>你的分數：{{ score }}</h2>
+{% endif %}
+
+<script>
+
+{% if not submitted %}
+
+    // 5分鐘
+    let time = 300;
+
+    const timer = document.getElementById("timer");
+
+    const countdown = setInterval(function(){
+
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        timer.innerHTML =
+            "剩餘時間：" + minutes + ":" + seconds;
+
+        time--;
+
+        // 時間到
+        if(time < 0){
+
+            clearInterval(countdown);
+
+        
+
+            document.getElementById("quizForm").submit();
+        }
+
+    }, 1000);
+
+{% else %}
+
+    // 已交卷
+    document.getElementById("timer").innerHTML =
+        "測驗已結束";
+
+{% endif %}
+
+</script>
+</body>
+</html>
