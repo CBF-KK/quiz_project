@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 
 # Django
-db.sqlite3
+
 
 # Media
 media/
