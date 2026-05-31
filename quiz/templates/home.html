@@ -2,195 +2,217 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>線上測驗</title>
+    <title>線上選擇題測驗</title>
 
     <style>
-        body{
-            font-family: Arial;
+        body {
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
             padding: 30px;
             background: #f5f5f5;
         }
 
-        .question{
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            color: blue;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .question {
             background: white;
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 10px;
         }
 
-        img{
+        .option {
+            display: block;
+            margin: 12px 0;
+        }
+
+        img {
             max-width: 300px;
             margin: 10px 0;
-            display:block;
+            display: block;
+        }
+
+        .result-box {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            font-size: 20px;
+            color: green;
+        }
+
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+
+        .wrong {
+            color: red;
+            font-weight: bold;
+        }
+
+        .answer-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f0f7ff;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        select {
+            padding: 6px;
         }
     </style>
 </head>
 <body>
 
-<h1>線上測驗網站</h1>
-<h2 id="timer" style="
-    color:blue;
-    position:fixed;
-    top:20px;
-    right:20px;
-    background:white;
-    padding:10px 20px;
-    border-radius:10px;
-">
-    剩餘時間:05:00
+<h1>線上選擇題測驗</h1>
+
+<h2 id="timer" class="timer">
+    剩餘時間：5:00
 </h2>
 
-<form method="post" id="quizForm">
+<form method="get">
+    <label>測驗題數：</label>
 
-    {% if score is not None %}
-    <div style="
-        margin-top:20px;
-        padding:20px;
-        background:#fff;
-        border-radius:10px;
-        font-size:20px;
-        color:green;
-    ">
-        🎯 測驗結束<br>
-        你的成績：{{ score }} 分
-    </div>
-    {% endif %}
-    {% csrf_token %}
+    <select name="count">
+        <option value="5">5 題</option>
+        <option value="10">10 題</option>
+    </select>
 
-    {% for q in questions %}
-
-    <div class="question">
-
-        <!-- 題目文字 -->
-        <h3>
-            第 {{ forloop.counter }} 題：
-            {{ q.question_text }}
-        </h3>
-
-        <!-- 題目圖片 -->
-        {% if q.question_image %}
-            <img src="{{ q.question_image.url }}">
-        {% endif %}
-
-        <!-- A -->
-<label>
-    <input type="radio"
-           name="{{ q.id }}"
-           value="A"
-           {% if submitted %}disabled{% endif %}>
-
-    {{ q.option_a_text }}
-
-    {% if q.option_a_image %}
-        <img src="{{ q.option_a_image.url }}">
-    {% endif %}
-</label>
-
-<br><br>
-
-<!-- B -->
-<label>
-    <input type="radio"
-           name="{{ q.id }}"
-           value="B"
-           {% if submitted %}disabled{% endif %}>
-
-    {{ q.option_b_text }}
-
-    {% if q.option_b_image %}
-        <img src="{{ q.option_b_image.url }}">
-    {% endif %}
-</label>
-
-<br><br>
-
-<!-- C -->
-<label>
-    <input type="radio"
-           name="{{ q.id }}"
-           value="C"
-           {% if submitted %}disabled{% endif %}>
-
-    {{ q.option_c_text }}
-
-    {% if q.option_c_image %}
-        <img src="{{ q.option_c_image.url }}">
-    {% endif %}
-</label>
-
-<br><br>
-
-<!-- D -->
-<label>
-    <input type="radio"
-           name="{{ q.id }}"
-           value="D"
-           {% if submitted %}disabled{% endif %}>
-
-    {{ q.option_d_text }}
-
-    {% if q.option_d_image %}
-        <img src="{{ q.option_d_image.url }}">
-    {% endif %}
-</label>
-
-    </div>
-
-    {% endfor %}
-
-    {% if not submitted %}
     <button type="submit">
-        交卷
+        開始測驗
     </button>
-    {% endif %}
-
 </form>
 
 {% if score is not None %}
-    <h2>你的分數：{{ score }}</h2>
+    <div class="result-box">
+        測驗完成<br>
+        你的分數：{{ score }} 分
+    </div>
 {% endif %}
 
+{% if not question_data %}
+    <p>目前沒有題目，請先到 Django Admin 新增題目。</p>
+{% endif %}
+
+<form method="post" id="quizForm">
+    {% csrf_token %}
+
+    {% for item in question_data %}
+        <div class="question">
+            <h3>
+                第 {{ forloop.counter }} 題：
+                {{ item.question.question_text }}
+            </h3>
+
+            <p>難易度：{{ item.question.get_difficulty_display }}</p>
+
+            {% if item.question.question_image %}
+                <img src="{{ item.question.question_image.url }}" alt="題目圖片">
+            {% endif %}
+
+            {% for option in item.options %}
+                <label class="option">
+                    <input
+                        type="radio"
+                        name="{{ item.question.id }}"
+                        value="{{ option.value }}"
+                        {% if submitted %}disabled{% endif %}
+                        {% if submitted and item.user_answer == option.value %}checked{% endif %}
+                    >
+
+                    {{ option.display_key }}.
+                    {{ option.text }}
+
+                    {% if option.image %}
+                        <img src="{{ option.image.url }}" alt="選項圖片">
+                    {% endif %}
+                </label>
+            {% endfor %}
+
+            {% if submitted %}
+                <div class="answer-box">
+                    {% if item.is_correct %}
+                        <p class="correct">作答結果：答對</p>
+                    {% else %}
+                        <p class="wrong">作答結果：答錯</p>
+                    {% endif %}
+
+                    <p>
+                        你的答案：
+                        {% if item.user_display_answer %}
+                            {{ item.user_display_answer }}
+                        {% else %}
+                            未作答
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        正確答案：{{ item.correct_option.display_key }}.
+                        {{ item.correct_option.text }}
+                    </p>
+
+                    {% if item.correct_option.image %}
+                        <img src="{{ item.correct_option.image.url }}" alt="正確答案圖片">
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    {% if question_data and not submitted %}
+        <button type="submit">
+            送出答案
+        </button>
+    {% endif %}
+</form>
+
 <script>
+{% if not submitted and question_data %}
 
-{% if not submitted %}
+let time = 300;
+const timer = document.getElementById("timer");
+const quizForm = document.getElementById("quizForm");
 
-    // 5分鐘
-    let time = 300;
+const countdown = setInterval(function () {
+    let minutes = Math.floor(time / 60);
+    let seconds = time % 60;
 
-    const timer = document.getElementById("timer");
+    seconds = seconds < 10 ? "0" + seconds : seconds;
 
-    const countdown = setInterval(function(){
+    timer.innerHTML = "剩餘時間：" + minutes + ":" + seconds;
 
-        let minutes = Math.floor(time / 60);
-        let seconds = time % 60;
+    time--;
 
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        timer.innerHTML =
-            "剩餘時間：" + minutes + ":" + seconds;
-
-        time--;
-
-        // 時間到
-        if(time < 0){
-
-            clearInterval(countdown);
-
-        
-
-            document.getElementById("quizForm").submit();
-        }
-
-    }, 1000);
+    if (time < 0) {
+        clearInterval(countdown);
+        quizForm.submit();
+    }
+}, 1000);
 
 {% else %}
 
-    // 已交卷
-    document.getElementById("timer").innerHTML =
-        "測驗已結束";
+document.getElementById("timer").innerHTML = "測驗已結束";
 
 {% endif %}
-
 </script>
+
 </body>
 </html>
