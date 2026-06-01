@@ -74,6 +74,16 @@ def home(request):
     time_limit_seconds = 300
 
     if request.method == "GET":
+        if request.GET.get("start") != "1":
+            return render(request, "home.html", {
+                "question_data": [],
+                "score": score,
+                "submitted": submitted,
+                "duration_seconds": duration_seconds,
+                "attempt": attempt,
+                "time_limit_seconds": time_limit_seconds,
+                "waiting_to_start": True,
+            })
         try:
             count = int(request.GET.get("count", 10))
         except ValueError:
@@ -212,6 +222,7 @@ def home(request):
         "duration_seconds": duration_seconds,
         "attempt": attempt,
         "time_limit_seconds": time_limit_seconds,
+        "waiting_to_start": False,
     })
 
 

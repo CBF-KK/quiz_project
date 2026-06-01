@@ -145,9 +145,11 @@
     <a href="{% url 'logout' %}">登出</a>
     </p>
 
-    <h2 id="timer" class="timer">
-        剩餘時間：準備開始
-    </h2>
+    {% if not waiting_to_start %}
+        <h2 id="timer" class="timer">
+            剩餘時間：準備開始
+        </h2>
+    {% endif %}
 
     {% if question_data %}
         <div class="progress-panel">
@@ -172,6 +174,8 @@
     {% endif %}
 
     <form method="get">
+
+        <input type="hidden" name="start" value="1">
         <label>測驗題數：</label>
 
         <select name="count">
@@ -192,7 +196,7 @@
         </div>
     {% endif %}
 
-    {% if not question_data %}
+    {% if not question_data and not waiting_to_start %}
         <p>目前沒有題目，請先到 Django Admin 新增題目。</p>
     {% endif %}
 
@@ -351,7 +355,11 @@ const countdown = setInterval(function () {
 
 {% else %}
 
-document.getElementById("timer").innerHTML = "測驗已結束";
+const timerElement = document.getElementById("timer");
+
+if (timerElement) {
+    timerElement.innerHTML = "測驗已結束";
+}
 
 {% endif %}
 </script>
