@@ -72,6 +72,7 @@ def home(request):
     duration_seconds = None
     attempt = None
     time_limit_seconds = 300
+    selected_count = 10
 
     if request.method == "GET":
         if request.GET.get("start") != "1":
@@ -91,6 +92,8 @@ def home(request):
 
         if count not in [5, 10]:
             count = 10
+
+        selected_count = count
         
         if count == 5:
             time_limit_seconds = 300
@@ -223,6 +226,7 @@ def home(request):
         "attempt": attempt,
         "time_limit_seconds": time_limit_seconds,
         "waiting_to_start": False,
+        "selected_count": selected_count,
     })
 
 
