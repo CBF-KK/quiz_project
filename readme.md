@@ -38,4 +38,6 @@ http://127.0.0.1:8000/
 
 
 後台管理
+Username:Nptu
+Password:twvs1234
 http://127.0.0.1:8000/admin/
