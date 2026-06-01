@@ -1,12 +1,17 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Django
-
-
-# Media
-
+# Virtual environment
+.venv/
+venv/
+env/
 
 # VSCode
 .vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

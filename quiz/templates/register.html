@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>註冊</title>
+</head>
+<body>
+    <h1>註冊帳號</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit">註冊</button>
+    </form>
+
+    <p>
+        已經有帳號？
+        <a href="{% url 'login' %}">登入</a>
+    </p>
+</body>
+</html>
