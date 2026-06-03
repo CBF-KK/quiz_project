@@ -5,6 +5,7 @@
     <title>線上選擇題測驗</title>
 
     <style>
+        /* 設定整個網頁的字型、背景與內距 */
         body {
             font-family: Arial, "Microsoft JhengHei", sans-serif;
             padding: 30px;
@@ -15,6 +16,7 @@
             margin-bottom: 10px;
         }
 
+        /* 固定在右上角的倒數計時器 */
         .timer {
             color: blue;
             position: fixed;
@@ -27,6 +29,7 @@
             z-index: 20;
         }
 
+        /* 固定在右側的作答進度面板 */
         .progress-panel {
             position: fixed;
             top: 90px;
@@ -49,6 +52,7 @@
             color: #333;
         }
 
+        /* 題號導覽按鈕，讓使用者快速跳到指定題目 */
         .nav-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -63,23 +67,27 @@
             border-radius: 50%;
             cursor: pointer;
         }
-
+        
+        /* 已作答的題號按鈕樣式 */
         .nav-button.answered {
             background: #2e7d32;
             color: white;
             border-color: #2e7d32;
         }
 
+        /* 未作答的題號按鈕樣式 */
         .nav-button.unanswered {
             background: #f7f7f7;
             color: #333;
         }
 
+        /* 主要內容區 */
         .page-content {
             max-width: 900px;
             margin-right: 240px;
         }
 
+        /* 每一題的外框樣式 */
         .question {
             background: white;
             padding: 20px;
@@ -87,17 +95,20 @@
             border-radius: 10px;
         }
 
+        /* 每個選項的顯示方式 */
         .option {
             display: block;
             margin: 12px 0;
         }
 
+        /* 題目圖片或選項圖片 */
         img {
             max-width: 300px;
             margin: 10px 0;
             display: block;
         }
 
+        /* 顯示測驗結果的區塊 */
         .result-box {
             margin: 20px 0;
             padding: 20px;
@@ -107,16 +118,19 @@
             color: green;
         }
 
+        /* 答對時的文字樣式 */
         .correct {
             color: green;
             font-weight: bold;
         }
 
+        /* 答錯時的文字樣式 */
         .wrong {
             color: red;
             font-weight: bold;
         }
 
+        /* 送出後顯示答案解析的區塊 */
         .answer-box {
             margin-top: 15px;
             padding: 12px;
@@ -151,6 +165,7 @@
         </h2>
     {% endif %}
 
+    <!-- 作答進度面板 -->
     {% if question_data %}
         <div class="progress-panel">
             <div class="progress-title">作答進度</div>
@@ -158,6 +173,7 @@
                 已完成 <span id="answeredCount">0</span> / {{ question_data|length }} 題
             </div>
 
+            <!-- 題號按鈕，可點擊跳到對應題目 -->
             <div class="nav-buttons">
                 {% for item in question_data %}
                     <button
@@ -173,11 +189,13 @@
         </div>
     {% endif %}
 
+    <!-- 開始測驗的表單 -->
     <form method="get">
 
         <input type="hidden" name="start" value="1">
         <label>測驗題數：</label>
 
+        <!-- 選擇測驗題數 -->
         <select name="count">
             <option value="5" {% if selected_count == 5 %}selected{% endif %}>
                 5 題
@@ -193,6 +211,7 @@
         </button>
     </form>
 
+    <!-- 顯示分數與花費時間 -->
     {% if score is not None %}
         <div class="result-box">
             測驗完成<br>
@@ -205,9 +224,11 @@
         <p>目前沒有題目，請先到 Django Admin 新增題目。</p>
     {% endif %}
 
+    <!-- 作答表單 -->
     <form method="post" id="quizForm">
         {% csrf_token %}
 
+         <!-- 逐題顯示題目與選項 -->
         {% for item in question_data %}
             <div class="question" id="question-{{ item.question.id }}">
                 <h3>
@@ -280,6 +301,7 @@
 </div>
 
 <script>
+/* 點擊右側題號時，捲動到指定題目 */
 function scrollToQuestion(questionId) {
     const target = document.getElementById("question-" + questionId);
 
@@ -291,6 +313,7 @@ function scrollToQuestion(questionId) {
     }
 }
 
+/* 更新作答進度與右側題號按鈕狀態 */
 function updateProgress() {
     const questionIds = new Set();
     const checkedQuestionIds = new Set();
@@ -330,12 +353,14 @@ function updateProgress() {
     }
 }
 
+/* 當使用者選擇答案時，重新計算作答進度 */
 document.querySelectorAll("input[type='radio'][data-question-id]").forEach(function (input) {
     input.addEventListener("change", updateProgress);
 });
 
 updateProgress();
 
+/* 設定倒數時間，秒數由 Django 後端傳入 */
 {% if not submitted and question_data %}
 
 let time = {{ time_limit_seconds }};
@@ -352,6 +377,7 @@ const countdown = setInterval(function () {
 
     time--;
 
+    // 如果時間到，就停止倒數並自動送出表單
     if (time < 0) {
         clearInterval(countdown);
         quizForm.submit();
@@ -360,6 +386,7 @@ const countdown = setInterval(function () {
 
 {% else %}
 
+/* 如果測驗已送出或沒有題目，顯示測驗結束 */
 const timerElement = document.getElementById("timer");
 
 if (timerElement) {
